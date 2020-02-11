@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+		<context:component-scan base-package="com.ecpbm.*">
+	    <context:exclude-filter type="annotation"
+	        expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+<!-- Spring的配置文件，这里主要配置和业务逻辑有关的 -->
+<!-- 数据源，事务控制等等 -->
+	<context:property-placeholder location="classpath:dbconfig.properties"/>
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+	    <property name="jdbcUrl" value="${jdbc.url}"></property>
+	    <property name="driverClass" value="${jdbc.driver}"></property>
+	    <property name="user" value="${jdbc.username}"></property>
+	    <property name="password" value="${jdbc.passowrd}"></property>
+	</bean> 
+	
+<!-- 配置sqlSessionFactoryBean -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	    <property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	
+<!-- 配置MapperScannnerConfigurer,Dao接口所在的包名，Spring会自动查找其下的类 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+	    <property name="basePackage" value="com.ecpbm.dao"></property>
+	    <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+	
+<!-- 配置事务管理 -->	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	    <property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+<!-- 启动基于注解的声明式事务管理配置 -->	
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+
+</beans>
